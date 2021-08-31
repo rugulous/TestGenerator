@@ -1,0 +1,19 @@
+{
+	"manifest_version": 2,
+	"name": "Testerer",
+	"version": "0.1",
+	
+	"description": "Generates a test plan for the current page",
+	
+	"icons": {
+		"48": "48.png"
+	},
+	
+	"browser_action": {
+		"default_icon": "48.png",
+		"default_title": "Testerer",
+		"default_popup": "generate.html"
+	},
+	
+	"permissions": ["activeTab"]
+}
