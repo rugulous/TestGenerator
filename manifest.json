@@ -15,5 +15,5 @@
 		"default_popup": "generate.html"
 	},
 	
-	"permissions": ["activeTab"]
+	"permissions": ["activeTab", "clipboardRead", "clipboardWrite"]
 }

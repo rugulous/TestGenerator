@@ -1,10 +1,10 @@
 /*browser.tabs.executeScript({
 	file: "lib.js"
-});*/
+});
 
 browser.tabs.executeScript({
 	file: "checkPage.js"
-});
+});*/
 
 browser.tabs.executeScript({
 	file: "doTests.js"
@@ -30,12 +30,26 @@ function clearContent(){
 
 function genTest(message){
 	if(tbl == null){
+		let copy = document.createElement("a");
+		copy.innerHTML = "Copy Table";
+		copy.style.color = "#FFF";
+		copy.style.cursor = "pointer";
+		copy.style.textDecoration = "underline";
+		cont.appendChild(copy);
+		
 		tbl = document.createElement("table");
 		tbl.className = "slot";
+		tbl.style.borderCollapse = "collapse";
+		tbl.style.fontFamily = "Arial, Verdana, sans-serif";
 		
 		let row = document.createElement("tr");
 		testCols.forEach(function(c){
 			let header = document.createElement("th");
+			header.style.border = "1px solid #000";
+			header.style.backgroundColor = "rgb(197, 224, 179)";
+			header.style.color = "#000";
+			header.style.fontWeight = "bold";
+			header.style.fontSize = "14pt";
 			header.innerHTML = c;
 			row.appendChild(header);
 		});
@@ -43,6 +57,29 @@ function genTest(message){
 		tbl.appendChild(row);
 		
 		cont.appendChild(tbl);
+		
+		copy.addEventListener("click", function(e){
+			/*try{
+				navigator.clipboard.write([
+					new ClipboardItem({
+						"text/html": tbl.outerHTML
+					})
+				]).then(() =>	alert("Copied!"));
+			} catch(err){
+				alert("Not copied!");
+				alert(err.message);
+			}*/
+			//FF does not yet support clipboard :(
+			let sel = window.getSelection();
+			sel.removeAllRanges();
+
+			let r = new Range();
+			r.selectNode(tbl);
+			
+			sel.addRange(r);		
+			document.execCommand("copy");
+			sel.removeAllRanges();
+		});
 	}
 	
 	let slot = document.createElement("div");
@@ -79,7 +116,10 @@ function genTest(message){
 		let row = document.createElement("tr");
 		let cols = [];
 		testCols.forEach(function(c){
-			cols.push(document.createElement("td"));
+			let col = document.createElement("td");
+			col.style.border = "1px solid #000";
+			col.style.fontSize = "11pt";
+			cols.push(col);
 		});
 		
 		let steps = "<ol><li>Go to <a href='" + message.page.link + "'>" + message.page.title + "</a></li>";
@@ -106,7 +146,7 @@ function genTest(message){
 	cont.appendChild(slot);
 }
 
-document.getElementById("check").addEventListener("click",(e) => {
+/*document.getElementById("check").addEventListener("click",(e) => {
 	clearContent();
 	sendMsg("check");
 });
@@ -114,7 +154,10 @@ document.getElementById("check").addEventListener("click",(e) => {
 document.getElementById("test").addEventListener("click",(e) => {
 	clearContent();
 	sendMsg("test")
-});
+});*/
+
+clearContent();
+sendMsg("test");
 
 browser.runtime.onMessage.addListener((message, sender, response) => {
 	console.log(message);
