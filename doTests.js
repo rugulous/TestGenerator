@@ -16,33 +16,16 @@
 			this.selector = selector.substring(0, selector.length - 1);
 		}
 	
-		getAll() {
-			return document.querySelectorAll(this.selector);
-		}
-	
-		highlight(){
-			let els = this.getAll();
-			els.forEach(function(e){
-				e.style.border = "solid 3px #F00";
-			});
-		}
-	
+		//returns an array containing the tests for the given element
 		getTests(el){
 			let tests = [];
-			//let els = this.getAll();
-		
-			//this doesn't work in .forEach :(
-			//for(let i = 0; i < els.length; i++){
 				
 				if(this._opts.hasOwnProperty("single") && this._opts.single && this._run){
 					console.log("Single test has already run!")
 					return [];
 				}
 				
-				//let el = els[i];
-				//let _tests = [];
-				
-				let name = tester_getElName(el);
+				let name = getElName(el);
 				
 				if(!this._opts.hasOwnProperty("runBase") || this._opts.runBase){
 					try{
@@ -59,14 +42,13 @@
 					console.log("Failed to get tests");
 					console.log(ex);
 				}
-				//tests = tests.concat([[el, _tests]]);
 				
 				this._run = true;
-			//}
-		
+
 			return tests;
 		}
 		
+		//generic tests for all elements (returns array)
 		getElTests(name, el){
 			let tests = [];
 			let style = window.getComputedStyle(el);
@@ -79,7 +61,13 @@
 		}
 	}
 
-	function tester_getElName(el){
+	//get a "friendly" name for the element
+	//tries to get the following:
+	//1. Label text (from an associated <label />)
+	//2. Placeholder text
+	//3. Default value
+	//4. Fallback to unknown
+	function getElName(el){
 		let unknown = "<unnamed field>";
 		
 		if(!el.labels){
@@ -89,7 +77,9 @@
 		return (el.labels.length > 0 ? el.labels[0].innerHTML : ((el.placeholder && el.placeholder != "") ? el.placeholder : (el.value.trim() != "" ? el.value : unknown)));
 	}
 	
-	
+	/*** 
+	**** BEGIN TEST GENERATION 
+	***/
 	function checkTextBox(name, el){	
 		return [
 		{
@@ -168,13 +158,13 @@
 		]
 	}
 	
-	browser.runtime.onMessage.addListener(message => {
-		if(message.command == "test"){
-			run();
-		}
-	})
+	/*** 
+	**** END TEST GENERATION 
+	***/
 	
+	//send tests and the element back to the main extension
 	function displayTests(tests, el){
+		//style the el in the extension so it looks like it does on the actual page
 		const styles = window.getComputedStyle(el);
 		let cssText = Array.from(styles).reduce((css, property) => `${css}${property}:${styles.getPropertyValue(property)};`);
 		
@@ -184,7 +174,7 @@
 				tests: tests,
 				el: html,
 				style: cssText,
-				name: tester_getElName(el),
+				name: getElName(el),
 				page: {
 					title: document.title,
 					link: window.location.href
@@ -192,6 +182,7 @@
 		});
 	}
 
+	//add new tests here :)
 	let tags = [
 		new Test("button:not([type=button])", ["input[type=submit]"], checkSubmit),
 		new Test("textarea", ["input[type=text]", "input[type=password]"], checkTextBox),
@@ -200,11 +191,12 @@
 		new Test("script", [], checkScripts, {single: true, runBase: false})
 	];
 	
+	//basic idea:
+	//loop through every element on the page
+	//check if it matches the selector for any of the tests
+	//if it matches, add tests for that element to an array
+	//pass that array and the element back to the main extension
 	function run(){
-
-		console.log("STARTING");
-	
-	
 		document.querySelectorAll("*").forEach(function(el){
 			let tests = [];
 			tags.forEach(function(t){
@@ -213,14 +205,18 @@
 					let _tests = t.getTests(el);
 					tests = tests.concat(_tests);
 				
-					//tests = tests.concat(t.getTests(el));
 				}
 			});
 		
 			if(tests.length > 0){
 				displayTests(tests, el);
 			}
-		});
-		
+		});		
 	}
+	
+	browser.runtime.onMessage.addListener(message => {
+		if(message.command == "test"){
+			run();
+		}
+	})
 })();
