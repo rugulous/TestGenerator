@@ -21,7 +21,6 @@
 			let tests = [];
 				
 				if(this._opts.hasOwnProperty("single") && this._opts.single && this._run){
-					console.log("Single test has already run!")
 					return [];
 				}
 				
@@ -133,7 +132,7 @@
 			steps: ["Set " + name + " to " + d, "Try to submit the page"],
 			expected: "An error message should be displayed prompting the user to select a valid " + name
 		}
-		]
+		];
 	}
 	
 	function checkSubmit(name, el){
@@ -144,7 +143,7 @@
 			steps: ["Ensure all fields are left blank","Try to submit the page"],
 			expected: "An error message should be displayed prompting the user to enter their details"
 		}
-		]
+		];
 	}
 	
 	function checkScripts(name, el){
@@ -155,7 +154,7 @@
 			steps: ["Open Developer Tools (F12)", "Disable JavaScript", "Try to use the page"],
 			expected: "Either: <br />The page functions without JavaScript<br />-- OR --<br />An error message is displayed prompting the user to enable JavaScript"
 		}
-		]
+		];
 	}
 	
 	/*** 
@@ -170,7 +169,7 @@
 		
 		let html = (el.tagName.toLowerCase() == "script" ? "<p style='color: #FFF; text-align: center;'>JS</p>" : el.outerHTML);
 		
-		browser.runtime.sendMessage({
+		let data = {
 				tests: tests,
 				el: html,
 				style: cssText,
@@ -179,7 +178,13 @@
 					title: document.title,
 					link: window.location.href
 				}
-		});
+		};
+		
+		if(typeof browser === "undefined"){
+			chrome.runtime.sendMessage(data);
+		} else {
+			browser.runtime.sendMessage(data);
+		}
 	}
 
 	//add new tests here :)
@@ -214,9 +219,17 @@
 		});		
 	}
 	
-	browser.runtime.onMessage.addListener(message => {
-		if(message.command == "test"){
-			run();
-		}
-	})
+	if(typeof browser === "undefined"){
+		chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+			if(message.command == "test"){
+				run();
+			}
+		});
+	} else {
+		browser.runtime.onMessage.addListener(message => {
+			if(message.command == "test"){
+				run();
+			}
+		});
+	}
 })();

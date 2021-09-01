@@ -1,18 +1,3 @@
-//inject our test script into the active tab, ready for execution
-browser.tabs.executeScript({
-	file: "doTests.js"
-});
-
-//send a message to the test script
-function sendMsg(message){
-	browser.tabs.query({active: true, currentWindow: true}).then(tabs => {
-		browser.tabs.sendMessage(tabs[0].id, {
-			command: message
-		});
-	});
-}
-
-
 //clears the content (duh) - resets the extension popup
 function clearContent(){
 	tbl = null;
@@ -159,17 +144,54 @@ function genTest(message){
 	cont.appendChild(slot);
 }
 
-//render tests as they are passed to us
-browser.runtime.onMessage.addListener((message, sender, response) => {
-	genTest(message);
-});
-
 //globals (nice)
 let cont = document.getElementById("content");
 let tbl = null;
 let testID = 1;
 //columns for our table
 let testCols = ["Test Case ID", "Test Scenario", "Test Steps", "Test Data", "Expected Results", "Actual Results", "Pass/Fail", "Notes (optional)"];
+
+let sendMsg = null;
+
+//check if we're chrome or firefox
+if(typeof browser === "undefined"){
+	chrome.tabs.executeScript({
+		file: "doTests.js"
+	});
+	
+	//send a message to the test script
+	sendMsg = function(message){
+		chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+			chrome.tabs.sendMessage(tabs[0].id, {
+				command: message
+			});
+		});
+	}
+	
+	//render tests as they are passed to us
+	chrome.runtime.onMessage.addListener((message, sender, response) => {
+		genTest(message);
+	});
+} else {
+	//inject our test script into the active tab, ready for execution
+	browser.tabs.executeScript({
+		file: "doTests.js"
+	});
+	
+	//send a message to the test script
+	sendMsg = function(message){
+		browser.tabs.query({active: true, currentWindow: true}).then(tabs => {
+			browser.tabs.sendMessage(tabs[0].id, {
+				command: message
+			});
+		});
+	}
+	
+	//render tests as they are passed to us
+	browser.runtime.onMessage.addListener((message, sender, response) => {
+		genTest(message);
+	});
+}
 
 //generate the tests as soon as the popup is opened
 clearContent();

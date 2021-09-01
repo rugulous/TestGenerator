@@ -1,7 +1,7 @@
 {
 	"manifest_version": 2,
-	"name": "Testerer",
-	"version": "0.1",
+	"name": "Test Generator",
+	"version": "0.2",
 	
 	"description": "Generates a test plan for the current page",
 	
