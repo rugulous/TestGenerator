@@ -11,6 +11,7 @@ function createCopy(){
 	copy.style.color = "#FFF";
 	copy.style.cursor = "pointer";
 	copy.style.textDecoration = "underline";
+	copy.style.fontFamily = "Arial";
 	cont.appendChild(copy);
 	
 	return copy;
@@ -56,6 +57,10 @@ function copyTableToClipboard(e){
 
 //converts an element from the actual page (passed as a HTML string) into a real element
 function createPageElement(html, style){
+	if(html.indexOf("body") > -1){
+		return document.createElement("div");
+	}
+	
 	let el = document.createElement("div");
 	el.innerHTML = html;
 	el = el.firstChild;
@@ -93,6 +98,7 @@ function generateColsForTest(id, scenario, steps, data, expected){
 		let col = document.createElement("td");
 		col.style.border = "1px solid #000";
 		col.style.fontSize = "11pt";
+		col.style.fontFamily = "Arial";
 		cols.push(col);
 	});
 		

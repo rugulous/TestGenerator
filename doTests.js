@@ -82,22 +82,22 @@
 	function checkTextBox(name, el){	
 		return [
 		{
-			scenario: "Does the user have to enter " + name + "?",
-			data: name + ' = ""',
-			steps: ["Ensure " + name + " is empty", "Try to submit the page"],
-			expected: "An error message should be displayed prompting the user to enter " + name
+			scenario: `Does the user have to enter ${name}?`,
+			data: `${name} = ""`,
+			steps: [`Ensure ${name} is empty`, `Try to submit the page`],
+			expected: `An error message should be displayed prompting the user to enter ${name}`
 		},
 		{
-			scenario: "Can the " + name + " be whitespace?",
-			data: name + ' = " "',
-			steps: ["Enter " + name, "Try to submit the page"],
-			expected: "An error message should be displayed prompting the user to enter " + name
+			scenario: `Can the ${name} be whitespace?`,
+			data: `${name} = " "`,
+			steps: [`Enter ${name}`, "Try to submit the page"],
+			expected: `An error message should be displayed prompting the user to enter ${name}`
 		},
 		{
-			scenario: "Can the " + name + " be a lot of whitespace?",
-			data: name + ' = "        "',
-			steps: ["Enter " + name, "Try to submit the page"],
-			expected: "An error message should be displayed prompting the user to enter " + name
+			scenario: `Can the ${name} be a lot of whitespace?`,
+			data: `${name} = "        "`,
+			steps: [`Enter ${name}`, "Try to submit the page"],
+			expected: `An error message should be displayed prompting the user to enter ${name}`
 		}
 		];
 	}
@@ -108,16 +108,39 @@
 		
 		return checkTextBox(name, el).concat([
 		{
-			scenario: "Can the " + name + " be more than 100 years ago?",
-			data: name + ' = "01/01/' + (today.getFullYear() - 101) + '"',
-			steps: ["Enter " + name, "Try to submit the page"],
-			expected: "An error message should be displayed prompting the user to enter a valid " + name
+			scenario: `Can the ${name} be more than 100 years ago?`,
+			data: `${name} = "01/01/${(today.getFullYear() - 101)}"`,
+			steps: [`Enter ${name}`, "Try to submit the page"],
+			expected: `An error message should be displayed prompting the user to enter a valid ${name}`
 		},
 		{
-			scenario: "Can the " + name + " be in the future?",
-			data: name + ' = "01/01/' + (today.getFullYear() + 1) + '"',
-			steps: ["Enter " + name, "Try to submit the page"],
-			expected: "An error message should be displayed prompting the user to enter a valid " + name
+			scenario: `Can the ${name} be in the future?`,
+			data: `${name} = "01/01/${(today.getFullYear() + 1)}"`,
+			steps: [`Enter ${name}`, "Try to submit the page"],
+			expected: `An error message should be displayed prompting the user to enter a valid ${name}`
+		}
+		]);
+	}
+	
+	function checkEmail(name, el){
+		return checkTextBox(name, el).concat([
+		{
+			scenario: `Can the ${name} be an invalid email address? (No @)`,
+			data: `${name} = "aaazzz"`,
+			steps: [`Enter ${name}`, "Try to submit the page"],
+			expected: `An error message should be displayed prompting the user to enter a valid ${name}`
+		},
+		{
+			scenario: `Can the ${name} be an invalid email address? (Too many @s)`,
+			data: `${name} = "test@test@test@burycollege.ac.uk"`,
+			steps: [`Enter ${name}`, "Try to submit the page"],
+			expected: `An error message should be displayed prompting the user to enter a valid ${name}`
+		},
+		{
+			scenario: `Can the ${name} be an invalid email address? (Double . after @)`,
+			data: `${name} = "test@burycollege..ac..uk"`,
+			steps: [`Enter ${name}`, "Try to submit the page"],
+			expected: `An error message should be displayed prompting the user to enter a valid ${name}`
 		}
 		]);
 	}
@@ -127,10 +150,10 @@
 		
 		return [
 		{
-			scenario: "Does " + name + " have to be selected?",
-			data: name + ' = "' + d + '"',
-			steps: ["Set " + name + " to " + d, "Try to submit the page"],
-			expected: "An error message should be displayed prompting the user to select a valid " + name
+			scenario: `Does ${name} have to be selected?`,
+			data: `${name} = "${d}"`,
+			steps: [`Set ${name}`, "Try to submit the page"],
+			expected: `An error message should be displayed prompting the user to select a valid ${name}`
 		}
 		];
 	}
@@ -153,6 +176,17 @@
 			data: "",
 			steps: ["Open Developer Tools (F12)", "Disable JavaScript", "Try to use the page"],
 			expected: "Either: <br />The page functions without JavaScript<br />-- OR --<br />An error message is displayed prompting the user to enable JavaScript"
+		}
+		];
+	}
+	
+	function checkBody(name, el){
+		return [
+		{
+			scenario: "Is the page accessible?",
+			data: "",
+			steps: ["Open Developer Tools (F12)", "Go to the Accessibility tab (Lighthouse on Chrome)", "Run an accessibility audit"],
+			expected: "There are no issues found"
 		}
 		];
 	}
@@ -191,9 +225,11 @@
 	let tags = [
 		new Test("button:not([type=button])", ["input[type=submit]"], checkSubmit),
 		new Test("textarea", ["input[type=text]", "input[type=password]"], checkTextBox),
+		new Test("input[type=email]", [], checkEmail),
 		new Test("input[type=date]", [], checkDate),
 		new Test("select", ["input[type=radio]"], checkSelect),
-		new Test("script", [], checkScripts, {single: true, runBase: false})
+		new Test("script", [], checkScripts, {single: true, runBase: false}),
+		new Test("body", [], checkBody)
 	];
 	
 	//basic idea:

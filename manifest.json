@@ -11,9 +11,9 @@
 	
 	"browser_action": {
 		"default_icon": "48.png",
-		"default_title": "Testerer",
+		"default_title": "Test Generator",
 		"default_popup": "generate.html"
 	},
 	
-	"permissions": ["activeTab", "clipboardRead", "clipboardWrite"]
+	"permissions": ["activeTab", "clipboardWrite"]
 }
